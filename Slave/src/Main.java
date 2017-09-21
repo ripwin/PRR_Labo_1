@@ -17,7 +17,7 @@ import slave.Slave;
 public class Main {
     public static void main(String[] args) {
         try {
-            Slave slave = new Slave("228.5.6.7");
+            Slave slave = new Slave("239.0.0.1");
             slave.run();
         } catch (IOException ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
