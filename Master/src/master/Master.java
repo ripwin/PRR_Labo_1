@@ -28,18 +28,24 @@ public class Master implements Runnable {
       running = true;
       
       try (
-         DatagramSocket socket = new DatagramSocket(12000)) 
+         MulticastSocket socket = new MulticastSocket(12000)) 
       {
          
-         
-         String message = "Allooooooo";
+
          byte[] tampon = new byte[256];
+         tampon = "Allooooooo".getBytes();
          
-         InetAddress group = InetAddress.getByName("239.0.0.1");
+         
+         InetAddress group = InetAddress.getByName(address);
          
          
-         tampon = message.getBytes();
-         DatagramPacket packet = new DatagramPacket(tampon, tampon.length, group, 12000);
+         // Paquet à envoyer
+         DatagramPacket packet = new DatagramPacket(
+            tampon, 
+            tampon.length, 
+            group, 
+            port
+         );
 
          while(running) {
             
