@@ -18,6 +18,12 @@ import java.util.logging.Logger;
  */
 public class Slave implements Runnable {
     
+    private long systemTime;
+    private long offset;
+    private long delay;
+    private long synchronizedTime;
+    
+    
     private MulticastSocket socket;
     private InetAddress group;
     
@@ -29,6 +35,7 @@ public class Slave implements Runnable {
         group = InetAddress.getByName(IPGroup);
         socket.joinGroup(group);
         System.out.println("Set up completed");
+        
     }
 
     @Override
