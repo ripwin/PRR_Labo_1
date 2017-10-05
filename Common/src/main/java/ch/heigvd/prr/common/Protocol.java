@@ -1,6 +1,6 @@
 package ch.heigvd.prr.common;
 
-class Protocol {
+public class Protocol {
    public enum Code { SYNC, FOLLOW_UP, DELAY_REQUEST, DELAY_RESPONSE };
    
    public static byte[] getByte(Protocol.Code code) {
