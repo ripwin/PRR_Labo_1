@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
+import java.nio.ByteBuffer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -14,6 +15,9 @@ import java.util.logging.Logger;
  */
 public class Slave implements Runnable {
 
+   private int id;
+   private long arrivedSyncTime;
+   
    private long systemTime;
    private long offset;
    private long delay;
@@ -59,20 +63,29 @@ public class Slave implements Runnable {
                         Master. Mettre à jour notre écart.
                 */
                
-               // Récupère le protocole
-               byte byteCode = packet.getData()[0];
+
+               ByteBuffer buffer = ByteBuffer.wrap(packet.getData());
                
-               switch (Protocol.getEnum(byteCode)) {
+               switch (Protocol.getEnum(buffer.get(0))) {
                   case SYNC:
-                        System.out.println("loool");
+                        System.out.println("SYNC");
+                        id = buffer.getInt(1);
+                        arrivedSyncTime = System.currentTimeMillis();
                      break;
 
                   case FOLLOW_UP:
-
+                        System.out.println("FOLLOW_UP");
+                        /*
+                           Vérifier l'id
+                           Récupérer le time systeme
+                           Démarrer un thread pour le delay
+                        
+                        */
                      break;
 
                   default:
-
+                     System.out.println("HAHAHAHAHAHA");
+                     // TODO : Exception
                      break;
                }
 

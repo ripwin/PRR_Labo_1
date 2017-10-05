@@ -50,7 +50,7 @@ public class Synchronization implements Runnable {
                // Message SYNC
                ByteBuffer buffer = ByteBuffer.allocate(32);
                buffer.put(Protocol.getByte(Protocol.Code.SYNC));
-               buffer.putInt(id);
+               buffer.putInt(this.id);
 
                byte[] data = buffer.array();
 
@@ -73,11 +73,9 @@ public class Synchronization implements Runnable {
                ByteBuffer buffer = ByteBuffer.allocate(32);
                buffer.put(Protocol.getByte(Protocol.Code.FOLLOW_UP));
                buffer.putLong(time);
-               buffer.putInt(id);
+               buffer.putInt(this.id);
 
                byte[] data = buffer.array();
-               
-               System.out.println(buffer.get(0));
 
                // Création du paquet
                DatagramPacket packet = new DatagramPacket(
