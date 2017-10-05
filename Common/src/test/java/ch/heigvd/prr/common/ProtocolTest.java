@@ -32,30 +32,30 @@ public class ProtocolTest extends TestCase {
     * Test of getByte method, of class Protocol.
     */
    public void testGetByte() {
-      byte[] expResult = new byte[2];
-      byte[] result = null;
+      byte expResult;
+      byte result;
       
       System.out.println("Protocol.getByte()...");
       
       // Test SYNC
-      expResult = new byte[]{0, 0};
+      expResult = 0;
       result = Protocol.getByte(Protocol.Code.SYNC);
-      assertTrue(Arrays.equals(expResult, result));
+      assertTrue(expResult == result);
       
       // Test FOLLOW_UP
-      expResult = new byte[]{0, 1};
+      expResult = 1;
       result = Protocol.getByte(Protocol.Code.FOLLOW_UP);
-      assertTrue(Arrays.equals(expResult, result));
+      assertTrue(expResult == result);
       
       // Test DELAY_REQUEST
-      expResult = new byte[]{1, 0};
+      expResult = 2;
       result = Protocol.getByte(Protocol.Code.DELAY_REQUEST);
-      assertTrue(Arrays.equals(expResult, result));
+      assertTrue(expResult == result);
       
       // Test DELAY_RESPONSE
-      expResult = new byte[]{1, 1};
+      expResult = 3;
       result = Protocol.getByte(Protocol.Code.DELAY_RESPONSE);
-      assertTrue(Arrays.equals(expResult, result));
+      assertTrue(expResult == result);
    }
 
    /**
@@ -69,26 +69,26 @@ public class ProtocolTest extends TestCase {
       
       // Test SYNC
       expCode = Protocol.Code.SYNC;
-      result = Protocol.getEnum(new byte[]{0, 0});
+      result = Protocol.getEnum((byte) 0);
       assertEquals(expCode, result);
       
       // Test FOLLOW_UP
       expCode = Protocol.Code.FOLLOW_UP;
-      result = Protocol.getEnum(new byte[]{0, 1});
+      result = Protocol.getEnum((byte) 1);
       assertEquals(expCode, result);
       
       // Test FOLLOW_UP
       expCode = Protocol.Code.DELAY_REQUEST;
-      result = Protocol.getEnum(new byte[]{1, 0});
+      result = Protocol.getEnum((byte) 2);
       assertEquals(expCode, result);
       
       // Test FOLLOW_UP
       expCode = Protocol.Code.DELAY_RESPONSE;
-      result = Protocol.getEnum(new byte[]{1, 1});
+      result = Protocol.getEnum((byte) 3);
       assertEquals(expCode, result);
       
       try {
-         Protocol.getEnum(new byte[3]);
+         Protocol.getEnum((byte) 4);
          fail("The method should throw an exception.");
       } catch (IllegalArgumentException e) {
          
