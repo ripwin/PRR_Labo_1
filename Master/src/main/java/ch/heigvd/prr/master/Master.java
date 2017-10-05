@@ -1,4 +1,4 @@
-package master;
+package ch.heigvd.prr.master;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
