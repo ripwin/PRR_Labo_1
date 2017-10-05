@@ -6,3 +6,7 @@
 */.nb-gradle/
 
 .DS_Store
+
+/Common/target/
+/Master/target/
+/Slave/target/
