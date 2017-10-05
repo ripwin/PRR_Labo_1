@@ -10,3 +10,6 @@
 /Common/target/
 /Master/target/
 /Slave/target/
+/Common/nbproject/
+
+*/nb-configuration.xml
