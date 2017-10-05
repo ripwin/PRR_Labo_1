@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
-import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -59,10 +58,13 @@ public class Slave implements Runnable {
                         notre réception du SYNC et l'heure fournie par le 
                         Master. Mettre à jour notre écart.
                 */
-               byte[] byteCode = Arrays.copyOfRange(packet.getData(), 0, 2);
+               
+               // Récupère le protocole
+               byte byteCode = packet.getData()[0];
+               
                switch (Protocol.getEnum(byteCode)) {
                   case SYNC:
-
+                        System.out.println("loool");
                      break;
 
                   case FOLLOW_UP:

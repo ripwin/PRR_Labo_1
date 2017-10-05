@@ -48,7 +48,7 @@ public class Synchronization implements Runnable {
             // SYNC
             {
                // Message SYNC
-               ByteBuffer buffer = ByteBuffer.allocate(8);
+               ByteBuffer buffer = ByteBuffer.allocate(32);
                buffer.put(Protocol.getByte(Protocol.Code.SYNC));
                buffer.putInt(id);
 
@@ -76,6 +76,8 @@ public class Synchronization implements Runnable {
                buffer.putInt(id);
 
                byte[] data = buffer.array();
+               
+               System.out.println(buffer.get(0));
 
                // Création du paquet
                DatagramPacket packet = new DatagramPacket(
