@@ -9,10 +9,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import ch.heigvd.prr.common.Protocol;
+import java.net.UnknownHostException;
 
 public class Synchronization implements Runnable {
    
-   private final String address;
+   private final InetAddress group;
    private final int port;
    private final int interval;
    
@@ -20,8 +21,8 @@ public class Synchronization implements Runnable {
    
    private boolean running;
    
-   public Synchronization(String address, int port, int interval) {
-      this.address = address;
+   public Synchronization(String address, int port, int interval) throws UnknownHostException {
+      this.group = InetAddress.getByName(address);
       this.port = port;
       this.interval = interval;
       
@@ -36,7 +37,7 @@ public class Synchronization implements Runnable {
       try (
          MulticastSocket socket = new MulticastSocket()) 
       {
-         InetAddress group = InetAddress.getByName(address);
+         
          
          
          while(running) {
