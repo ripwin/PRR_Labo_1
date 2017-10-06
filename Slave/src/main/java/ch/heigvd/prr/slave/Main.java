@@ -17,7 +17,7 @@ import java.util.logging.Logger;
 public class Main {
     public static void main(String[] args) {
         try {
-            Slave slave = new Slave("239.0.0.1");
+            Slave slave = new Slave("239.0.0.1", 12000);
             slave.run();
         } catch (IOException ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
