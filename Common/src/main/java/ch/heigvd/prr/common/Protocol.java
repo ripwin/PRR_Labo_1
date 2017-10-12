@@ -29,6 +29,7 @@ public class Protocol {
    }
    
    public static InetAddress getMulticastAddress() throws UnknownHostException {
+       System.setProperty("java.net.preferIPv4Stack", "true");
        return InetAddress.getByName("239.0.0.1");
    }
 }

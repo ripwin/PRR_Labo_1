@@ -46,15 +46,13 @@ public class SynchronizedClock implements Runnable {
      * @throws IOException 
      */
     public SynchronizedClock(InetAddress address, int port) throws IOException {
-        
-      System.setProperty("java.net.preferIPv4Stack", "true");
       
       System.out.println("Creating socket...");
       socket = new MulticastSocket(port);
       
       System.out.println("Joining group " + address);
       group = address;
-      socket.joinGroup(group);
+      socket.joinGroup(address);
       
       System.out.println("Set up completed");
     }
