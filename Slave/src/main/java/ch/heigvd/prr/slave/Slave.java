@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
+import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -13,91 +14,29 @@ import java.util.logging.Logger;
  *
  * @author mathieu
  */
-public class Slave implements Runnable {
+public class Slave {
 
-   private int id;
+    private SynchronizedClock clock;
 
-   private long systemTime;
-   private long offset;
-   private long delay;
-   private long synchronizedTime;
-   
-   private MulticastSocket socket;
-   private InetAddress group;
+    private Slave() throws UnknownHostException, IOException {
+        clock = new SynchronizedClock(Protocol.getMulticastAddress(), Protocol.MULTICAST_PORT);
+    }
 
-   public Slave(String address, int port) throws IOException {
-      System.setProperty("java.net.preferIPv4Stack", "true");
-      
-      System.out.println("Creating socket...");
-      socket = new MulticastSocket(port);
-      
-      System.out.println("Joining group " + address);
-      group = InetAddress.getByName(address);
-      socket.joinGroup(group);
-      
-      System.out.println("Set up completed");
-   }
+    private void startSynchronisation() {
+        // Start the clock
+        new Thread(clock).start();
+    }
 
-   @Override
-   public void run() {
-      try {
-         while (true) {
-            try {
-               
-               // Récupère le message
-               byte[] buf = new byte[256];
-               DatagramPacket packet = new DatagramPacket(buf, buf.length);
-               System.out.println("Waiting for UDP packet");
-               socket.receive(packet);
+    public static void main(String... args) {
 
-               ByteBuffer buffer = ByteBuffer.wrap(packet.getData());
-               
-               switch (Protocol.getEnum(buffer.get(0))) {
-                  case SYNC:
-                        System.out.println("SYNC");
-                        
-                        // Récupère l'id
-                        id = buffer.getInt(1);
-                        
-                        // Sauvegarde du temps local
-                        synchronizedTime = System.currentTimeMillis();
-                     break;
+        try {
 
-                  case FOLLOW_UP:
-                        System.out.println("FOLLOW_UP");
-
-                        // Récupère l'id
-                        int id = buffer.getInt(9);
-
-                        if(id == this.id) {
-                           // Récupère le temps master
-                           long masterTime = buffer.getLong(1);
-                           
-                           // Calcul de l'écart
-                           offset = masterTime - synchronizedTime;
-                           
-                           // Démarre le thread
-                        }
-                     break;
-
-                  default:
-                     System.out.println("HAHAHAHAHAHA");
-                     // TODO : Exception
-                     break;
-               }
-
-               String received = new String(packet.getData());
-               System.out.println("Data received: " + received);
-            } catch (IOException ex) {
-               Logger.getLogger(Slave.class.getName()).log(Level.SEVERE, null, ex);
-               break;
-            }
-         }
-
-         socket.leaveGroup(group);
-         socket.close();
-      } catch (IOException ex) {
-         Logger.getLogger(Slave.class.getName()).log(Level.SEVERE, null, ex);
-      }
-   }
+            Slave slave = new Slave();
+            slave.startSynchronisation();
+        } catch (UnknownHostException ex) {
+            Logger.getLogger(Slave.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(Slave.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
 }
