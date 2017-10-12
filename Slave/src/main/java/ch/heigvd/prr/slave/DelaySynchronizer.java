@@ -30,6 +30,9 @@ public class DelaySynchronizer implements Runnable {
     // Le port sur lequel envoyer les paquets
     private final int masterPort;
     
+    // Synchronized clock to get the current offset
+    private SynchronizedClock parentClock;
+    
     // Temps de la dernière DELAY_REQUEST
     private long lastDelayRequestTime;
     
@@ -39,11 +42,13 @@ public class DelaySynchronizer implements Runnable {
     // l'ID de la dernière requête d'ID envoyée
     private int delayID;
     
-    public DelaySynchronizer(InetAddress masterIPAddress, int port) throws SocketException {
+    public DelaySynchronizer(InetAddress masterIPAddress, int port, SynchronizedClock parentClock) throws SocketException {
         this.masterIPAddress = masterIPAddress;
         this.masterPort = port;
         
         socket = new DatagramSocket(port);
+        
+        this.parentClock = parentClock;
     }
     
     public synchronized long getDelay() {
@@ -84,8 +89,7 @@ public class DelaySynchronizer implements Runnable {
                     socket.send(packet);
                     
                     // Enregistrer le moment de l'envoi
-                    // TODO, prendre l'heure corrigée
-                    lastDelayRequestTime = System.currentTimeMillis();
+                    lastDelayRequestTime = System.currentTimeMillis() + parentClock.getOffset();
                     
                 } catch (IOException ex) {
                     Logger.getLogger(DelaySynchronizer.class.getName()).log(Level.SEVERE, null, ex);

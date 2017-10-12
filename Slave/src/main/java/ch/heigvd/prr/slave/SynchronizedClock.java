@@ -70,6 +70,10 @@ public class SynchronizedClock implements Runnable {
         synchronizedTime = time;
     }
     
+    public synchronized long getOffset() {
+        return offset;
+    }
+    
     public synchronized void quitProcess() {
         quitProcess = true;
     }
