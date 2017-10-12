@@ -15,12 +15,14 @@ public class Protocol {
    // Le port sur lequel effectuer les requêtes de delai
    public static final int DELAY_COMMUNICATION_PORT = 13000;
    
-   // Intervalle entre deux envoies de SYNC en seconde
+   // Intervalle entre deux envois de SYNC en seconde
    public static final int INTERVAL_SYNC = 4000;
    
-   // Intervalle entre deux envoies de DELAY en secondes
-   public static final int INTERVAL_DELAY = 4000;
+   // Borne inférieure de l'intervalle d'envoie des DELAY_REQUEST
+   public static final int INTERVAL_DELAY_MIN = INTERVAL_SYNC * 4;
    
+   // Borne sipérieure de l'intervalle d'envoie des DELAY_REQUEST
+   public static final int INTERVAL_DELAY_MAX = INTERVAL_SYNC * 60;
 
    public static byte getByte(Protocol.Code code) {
       return (byte) code.ordinal();

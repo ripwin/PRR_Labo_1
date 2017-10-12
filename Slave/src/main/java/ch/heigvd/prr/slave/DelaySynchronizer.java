@@ -53,6 +53,11 @@ public class DelaySynchronizer implements Runnable {
     private synchronized void setDelay(long delay) {
         this.delay = delay;
     }
+    
+    public static long getRandomWaitingTime() {
+        int range = (Protocol.INTERVAL_DELAY_MAX - Protocol.INTERVAL_DELAY_MIN) + 1;
+        return (long)(Math.random() * range) + Protocol.INTERVAL_DELAY_MIN;
+    }
 
     @Override
     public void run() {
@@ -112,10 +117,8 @@ public class DelaySynchronizer implements Runnable {
                     }
                     
                     // Attendre un temps aléatoire 
-                    int range = (400 - 0) + 1;
-                    Thread.sleep((long)(Math.random() * range) + 0);
+                    Thread.sleep(getRandomWaitingTime());
                     
-
                 } catch (IOException ex) {
                     Logger.getLogger(DelaySynchronizer.class.getName()).log(Level.SEVERE, null, ex);
                 } catch (InterruptedException ex) {
