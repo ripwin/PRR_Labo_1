@@ -12,7 +12,7 @@ public class Main {
             new Synchronization(
                Protocol.getMulticastAddress(), 
                Protocol.MULTICAST_PORT, 
-               4000)
+               Protocol.INTERVAL_SYNC)
          );
          
          Thread delay = new Thread(new Lol(Protocol.DELAY_COMMUNICATION_PORT));
