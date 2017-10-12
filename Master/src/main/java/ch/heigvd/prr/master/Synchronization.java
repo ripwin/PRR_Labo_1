@@ -21,10 +21,10 @@ public class Synchronization implements Runnable {
 
    private boolean running;
 
-   public Synchronization(String address, int port, int interval)
+   public Synchronization(InetAddress address, int port, int interval)
       throws UnknownHostException 
    {
-      this.group = InetAddress.getByName(address);
+      this.group = address;
       this.port = port;
       this.interval = interval;
 
