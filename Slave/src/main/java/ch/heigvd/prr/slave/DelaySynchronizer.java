@@ -21,12 +21,17 @@ import java.util.logging.Logger;
  */
 public class DelaySynchronizer implements Runnable {
     
-    private DatagramSocket socket;
+    // Socket pour envoyer les paquets UDP
+    private final DatagramSocket socket;
     
     // L'adresse IP du master
-    private InetAddress masterIPAddress;
+    private final InetAddress masterIPAddress;
     
-    private int masterPort;
+    // Le port sur lequel envoyer les paquets
+    private final int masterPort;
+    
+    // Temps de la dernière DELAY_REQUEST
+    private long lastDelayRequestTime;
     
     // Le dernier délai calculé pour communiquer avec le master
     private long delay;
@@ -55,21 +60,28 @@ public class DelaySynchronizer implements Runnable {
             
             {
                 try {
-                    // Send SYNC
+                    // Créer le contenu de la requête DELAY_REQUEST
                     ByteBuffer buffer = ByteBuffer.allocate(32);
                     buffer.put(Protocol.getByte(Protocol.Code.DELAY_REQUEST));
                     buffer.putInt(this.delayID++);
                     
                     byte[] data = buffer.array();
                     
-                    // Creates a packet
+                    // Créer un paquet UDP
                     DatagramPacket packet = new DatagramPacket(
                             data,
                             data.length,
                             masterIPAddress,
                             masterPort
                     );
+                    
+                    // Envoyer la requête
                     socket.send(packet);
+                    
+                    // Enregistrer le moment de l'envoi
+                    // TODO, prendre l'heure corrigée
+                    lastDelayRequestTime = System.currentTimeMillis();
+                    
                 } catch (IOException ex) {
                     Logger.getLogger(DelaySynchronizer.class.getName()).log(Level.SEVERE, null, ex);
                 }
@@ -78,16 +90,35 @@ public class DelaySynchronizer implements Runnable {
             {
                 try {
 
-                    // Attendre la réponse du serveur
+                    // Préparer le container la réponse du serveur
                     byte[] buf = new byte[32];
                     DatagramPacket packet = new DatagramPacket(buf, delayID);
-
+                    
+                    // Attendre la réponse DELAY_RESPONSE
                     socket.receive(packet);
 
                     ByteBuffer buffer = ByteBuffer.wrap(packet.getData());
-
+                    
+                    // Si la réponse du serveur correspond à un DELAY_RESPONSE
+                    if (Protocol.getEnum(buffer.get(0)) == Protocol.Code.DELAY_RESPONSE) {
+                        int id = buffer.getInt(1);
+                        
+                        // Si l'ID de la réponse correspond au dernier DELAY_REQUEST
+                        if (id == delayID) {
+                            long masterTime = buffer.getLong(5);
+                            
+                            setDelay((masterTime - lastDelayRequestTime) / 2);
+                        }
+                    }
+                    
+                    // Attendre un temps aléatoire 
+                    int range = (400 - 0) + 1;
+                    Thread.sleep((long)(Math.random() * range) + 0);
+                    
 
                 } catch (IOException ex) {
+                    Logger.getLogger(DelaySynchronizer.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (InterruptedException ex) {
                     Logger.getLogger(DelaySynchronizer.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
