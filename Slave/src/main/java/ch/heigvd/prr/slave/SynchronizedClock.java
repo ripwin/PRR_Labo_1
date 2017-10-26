@@ -25,7 +25,7 @@ public class SynchronizedClock implements Runnable {
     private InetAddress group;
     
     // Temps synchronisé
-    private long synchronizedTime;
+    private long currentTime;
     
     // Objet chargé de synchroniser le délai
     private DelaySynchronizer delaySynchronizer;
@@ -37,6 +37,9 @@ public class SynchronizedClock implements Runnable {
     private long offset;
     
     private boolean quitProcess = false;
+    
+    private InetAddress serverAddress;
+    private int serverPort;
     
     /**
      * Etablit une connexion au groupe multicast fourni en paramètre
@@ -63,18 +66,14 @@ public class SynchronizedClock implements Runnable {
      * @return l'heure en ms 
      */
     public synchronized long getSynchronizedTime() {
-        return synchronizedTime;
-    }
-    
-    protected synchronized void setSynchronizedTime(long time) {
-        synchronizedTime = time;
+        return offset + delaySynchronizer.getDelay();
     }
     
     public synchronized void quitProcess() {
         quitProcess = true;
     }
     
-    public synchronized boolean reuqestedQuiProcess() {
+    public synchronized boolean reuqestedQuitProcess() {
         return quitProcess;
     }
 
@@ -101,7 +100,7 @@ public class SynchronizedClock implements Runnable {
                         syncID = buffer.getInt(1);
                         
                         // Sauvegarde du temps local
-                        synchronizedTime = System.currentTimeMillis();
+                        currentTime = System.currentTimeMillis();
                      break;
 
                   case FOLLOW_UP:
@@ -115,19 +114,23 @@ public class SynchronizedClock implements Runnable {
                            long masterTime = buffer.getLong(1);
                            
                            // Calcul de l'écart
-                           offset = masterTime - synchronizedTime;
+                           offset = masterTime - currentTime;
                            
                            // Démarre le thread
+                           if(delaySynchronizer == null) {
+                              serverAddress = packet.getAddress();
+                              serverPort = packet.getPort();
+
+                           }
+                           
                         }
                      break;
 
                   default:
-                     System.out.println("HAHAHAHAHAHA");
-                     // TODO : Exception
-                     break;
+                     continue;
                }
                
-               if (reuqestedQuiProcess()) {
+               if (reuqestedQuitProcess()) {
                    break;
                }
             }
@@ -138,6 +141,14 @@ public class SynchronizedClock implements Runnable {
         } catch (IOException ex) {
             Logger.getLogger(SynchronizedClock.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+    
+    public InetAddress getServerAddress() {
+       return serverAddress;
+    }
+    
+    public int getServerPort() {
+       return serverPort;
     }
     
 }
