@@ -2,11 +2,7 @@ package ch.heigvd.prr.slave;
 
 import ch.heigvd.prr.common.Protocol;
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.InetAddress;
-import java.net.MulticastSocket;
 import java.net.UnknownHostException;
-import java.nio.ByteBuffer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 

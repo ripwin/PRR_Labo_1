@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package ch.heigvd.prr.slave;
 
 import ch.heigvd.prr.common.Protocol;
@@ -44,9 +39,9 @@ public class DelaySynchronizer implements Runnable {
     
     public DelaySynchronizer(SynchronizedClock parentClock) throws SocketException {
         this.masterIPAddress = parentClock.getMasterAddress();
-        this.masterPort = parentClock.getMasterPort();
+        this.masterPort = Protocol.DELAY_COMMUNICATION_PORT;
         
-        socket = new DatagramSocket(masterPort);
+        socket = new DatagramSocket();
         
         this.parentClock = parentClock;
     }
@@ -66,6 +61,11 @@ public class DelaySynchronizer implements Runnable {
 
     @Override
     public void run() {
+        
+        System.out.println("Starting DelaySynchronizer...");
+        System.out.println("Master Ip is " + masterIPAddress);
+        System.out.println("Master port is " + Protocol.DELAY_COMMUNICATION_PORT);
+        
         while (true) {
             
             {
@@ -73,7 +73,7 @@ public class DelaySynchronizer implements Runnable {
                     // Créer le contenu de la requête DELAY_REQUEST
                     ByteBuffer buffer = ByteBuffer.allocate(32);
                     buffer.put(Protocol.getByte(Protocol.Code.DELAY_REQUEST));
-                    buffer.putInt(this.delayID++);
+                    buffer.putInt(this.delayID);
                     
                     byte[] data = buffer.array();
                     
@@ -91,6 +91,8 @@ public class DelaySynchronizer implements Runnable {
                     // Enregistrer le moment de l'envoi
                     lastDelayRequestTime = System.currentTimeMillis() + parentClock.getOffset();
                     
+                    System.out.println("Sent DELAY_REQUEST at: " + lastDelayRequestTime);
+                    
                 } catch (IOException ex) {
                     Logger.getLogger(DelaySynchronizer.class.getName()).log(Level.SEVERE, null, ex);
                 }
@@ -101,12 +103,14 @@ public class DelaySynchronizer implements Runnable {
 
                     // Préparer le container la réponse du serveur
                     byte[] buf = new byte[32];
-                    DatagramPacket packet = new DatagramPacket(buf, delayID);
+                    DatagramPacket packet = new DatagramPacket(buf, buf.length);
                     
                     // Attendre la réponse DELAY_RESPONSE
                     socket.receive(packet);
 
                     ByteBuffer buffer = ByteBuffer.wrap(packet.getData());
+                    
+                    System.out.println("Received a response in DelaySynchronizer...");
                     
                     // Si la réponse du serveur correspond à un DELAY_RESPONSE
                     if (Protocol.getEnum(buffer.get(0)) == Protocol.Code.DELAY_RESPONSE) {
@@ -117,6 +121,10 @@ public class DelaySynchronizer implements Runnable {
                             long masterTime = buffer.getLong(5);
                             
                             setDelay((masterTime - lastDelayRequestTime) / 2);
+                            
+                            delayID++;
+                            
+                            System.out.println("Received DELAY_RESPONSE with delay: " + ((masterTime - lastDelayRequestTime) / 2));
                         }
                     }
                     

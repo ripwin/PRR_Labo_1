@@ -39,7 +39,6 @@ public class SynchronizedClock implements Runnable {
     private boolean quitProcess = false;
     
     private InetAddress masterAddress;
-    private int masterPort;
     
     /**
      * Etablit une connexion au groupe multicast fourni en paramètre
@@ -123,7 +122,6 @@ public class SynchronizedClock implements Runnable {
                            // Démarre le thread
                            if(delaySynchronizer == null) {
                               masterAddress = packet.getAddress();
-                              masterPort = packet.getPort();
 
                               delaySynchronizer = new DelaySynchronizer(this);
                               
@@ -151,10 +149,6 @@ public class SynchronizedClock implements Runnable {
     
     public InetAddress getMasterAddress() {
        return masterAddress;
-    }
-    
-    public int getMasterPort() {
-       return masterPort;
     }
     
 }
