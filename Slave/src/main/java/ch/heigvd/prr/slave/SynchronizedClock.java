@@ -125,8 +125,10 @@ public class SynchronizedClock implements Runnable {
                               masterAddress = packet.getAddress();
                               masterPort = packet.getPort();
 
+                              delaySynchronizer = new DelaySynchronizer(this);
+                              
+                              new Thread(delaySynchronizer).start();
                            }
-                           
                         }
                      break;
 
