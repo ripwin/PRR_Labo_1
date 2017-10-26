@@ -42,11 +42,11 @@ public class DelaySynchronizer implements Runnable {
     // l'ID de la dernière requête d'ID envoyée
     private int delayID;
     
-    public DelaySynchronizer(InetAddress masterIPAddress, int port, SynchronizedClock parentClock) throws SocketException {
-        this.masterIPAddress = masterIPAddress;
-        this.masterPort = port;
+    public DelaySynchronizer(SynchronizedClock parentClock) throws SocketException {
+        this.masterIPAddress = parentClock.getMasterAddress();
+        this.masterPort = parentClock.getMasterPort();
         
-        socket = new DatagramSocket(port);
+        socket = new DatagramSocket(masterPort);
         
         this.parentClock = parentClock;
     }

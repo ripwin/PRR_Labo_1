@@ -25,7 +25,7 @@ public class SynchronizedClock implements Runnable {
     private InetAddress group;
     
     // Temps synchronisé
-    private long synchronizedTime;
+    private long currentTime;
     
     // Objet chargé de synchroniser le délai
     private DelaySynchronizer delaySynchronizer;
@@ -37,6 +37,9 @@ public class SynchronizedClock implements Runnable {
     private long offset;
     
     private boolean quitProcess = false;
+    
+    private InetAddress masterAddress;
+    private int masterPort;
     
     /**
      * Etablit une connexion au groupe multicast fourni en paramètre
@@ -63,11 +66,7 @@ public class SynchronizedClock implements Runnable {
      * @return l'heure en ms 
      */
     public synchronized long getSynchronizedTime() {
-        return synchronizedTime;
-    }
-    
-    protected synchronized void setSynchronizedTime(long time) {
-        synchronizedTime = time;
+        return offset + delaySynchronizer.getDelay();
     }
     
     public synchronized long getOffset() {
@@ -105,7 +104,7 @@ public class SynchronizedClock implements Runnable {
                         syncID = buffer.getInt(1);
                         
                         // Sauvegarde du temps local
-                        synchronizedTime = System.currentTimeMillis();
+                        currentTime = System.currentTimeMillis();
                      break;
 
                   case FOLLOW_UP:
@@ -119,16 +118,20 @@ public class SynchronizedClock implements Runnable {
                            long masterTime = buffer.getLong(1);
                            
                            // Calcul de l'écart
-                           offset = masterTime - synchronizedTime;
+                           offset = masterTime - currentTime;
                            
                            // Démarre le thread
+                           if(delaySynchronizer == null) {
+                              masterAddress = packet.getAddress();
+                              masterPort = packet.getPort();
+
+                           }
+                           
                         }
                      break;
 
                   default:
-                     System.out.println("HAHAHAHAHAHA");
-                     // TODO : Exception
-                     break;
+                     continue;
                }
                
                if (requestedQuitProcess()) {
@@ -142,6 +145,14 @@ public class SynchronizedClock implements Runnable {
         } catch (IOException ex) {
             Logger.getLogger(SynchronizedClock.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+    
+    public InetAddress getMasterAddress() {
+       return masterAddress;
+    }
+    
+    public int getMasterPort() {
+       return masterPort;
     }
     
 }
