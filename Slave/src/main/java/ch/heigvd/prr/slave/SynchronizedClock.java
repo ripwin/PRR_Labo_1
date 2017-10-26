@@ -69,6 +69,10 @@ public class SynchronizedClock implements Runnable {
         return offset + delaySynchronizer.getDelay();
     }
     
+    public synchronized long getOffset() {
+        return offset;
+    }
+    
     public synchronized void quitProcess() {
         quitProcess = true;
     }
