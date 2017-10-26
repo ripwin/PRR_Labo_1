@@ -78,7 +78,7 @@ public class SynchronizedClock implements Runnable {
         quitProcess = true;
     }
     
-    public synchronized boolean reuqestedQuiProcess() {
+    public synchronized boolean requestedQuitProcess() {
         return quitProcess;
     }
 
@@ -131,7 +131,7 @@ public class SynchronizedClock implements Runnable {
                      break;
                }
                
-               if (reuqestedQuiProcess()) {
+               if (requestedQuitProcess()) {
                    break;
                }
             }
