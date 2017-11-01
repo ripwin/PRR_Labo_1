@@ -82,7 +82,7 @@ public class DelaySynchronizer implements Runnable {
      *
      * @return a random waiting time
      */
-    public static long getRandomWaitingTime() {
+    protected static long getRandomWaitingTime() {
         int range = (Protocol.INTERVAL_DELAY_MAX - Protocol.INTERVAL_DELAY_MIN) + 1;
         return (long) (Math.random() * range) + Protocol.INTERVAL_DELAY_MIN;
     }
