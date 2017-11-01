@@ -57,7 +57,9 @@ public class Delay implements Runnable {
 
                ByteBuffer buffer = ByteBuffer.wrap(packet.getData());
                
-               if(Protocol.getEnum(buffer.get(0)) != Protocol.Code.DELAY_REQUEST) {
+               if(Protocol.getEnum(buffer.get(0)) != 
+                  Protocol.Code.DELAY_REQUEST) 
+               {
                   continue;
                }
                

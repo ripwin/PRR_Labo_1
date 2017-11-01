@@ -11,10 +11,13 @@ import java.util.logging.Logger;
  * It contains two classes : Synchronization and Delay
  * 
  * Synchronization sends every k seconds a Sync and Follow up request to the
- * slave. It allows to calculate the offset between the master and the slave.
+ * slave. (Use multicast) It allows to calculate the offset between the master 
+ * and the slave.
  * 
- * Delay waits a DELAY_REQUEST from the slave and sends a DELAY_RESPONSE with 
- * the time when a DELAY_REQUEST arrived.
+ * Delay waits a DELAY_REQUEST from the slave and sends a DELAY_RESPONSE 
+ * (use unicast UDP) with the time when a DELAY_REQUEST arrived.
+ * 
+ * Those classes are launched in two different threads.
  */
 public class Main {
    public static void main(String args[]) {
@@ -27,7 +30,9 @@ public class Main {
             )
          );
          
-         Thread delay = new Thread(new Delay(Protocol.DELAY_COMMUNICATION_PORT));
+         Thread delay = new Thread(
+            new Delay(Protocol.DELAY_COMMUNICATION_PORT)
+         );
          
          sync.start();
          delay.start();
