@@ -34,7 +34,7 @@ public class Lol implements Runnable {
                DatagramPacket packet = new DatagramPacket(buf, buf.length);
                System.out.println("Waiting for UDP packet");
                socket.receive(packet);
-               
+
                // Get sender info
                address = packet.getAddress();
                port = packet.getPort();
@@ -67,7 +67,7 @@ public class Lol implements Runnable {
                );
                
                socket.send(packet);
-               System.out.println("Envoie du DELAY_RESPONSE");
+               System.out.println("Envoie du DELAY_RESPONSE a " + address + " " + port);
             }
          }     
          
