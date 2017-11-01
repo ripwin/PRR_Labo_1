@@ -1,6 +1,6 @@
 /**
  * file:        SynchronizedClock.java
- * created:     10.10.2017
+ * created:     12.10.2017
  */
 package ch.heigvd.prr.slave;
 
@@ -18,8 +18,8 @@ import java.util.logging.Logger;
  * Protocol. Its purpose is to provide a synchronized time, computed by 
  * calculating an offset and a delay to the Master clock. 
  * 
- * The SynchronizedClock calculates the offset and uses a DelaySynchronizer
- * instance to manage the communication delay.
+ * The SynchronizedClock calculates the offset (SYNC and FOLLOW_UP messages) 
+ * and uses a DelaySynchronizer instance to manage the communication delay.
  * 
  * Some methods use java lock mechanisms to manage thread concurrency.
  */
@@ -50,28 +50,23 @@ public class SynchronizedClock implements Runnable {
     private boolean quitProcess = false;
     
     /**
-     * Etablit une connexion au groupe multicast fourni en paramètre
-     * en utilisant le port fourni en paramètre.
-     * @param address l'adresse multicast
-     * @param port le port sur lequel établir la connexion
+     * Constructor, establishes a connection to the multicast group designed
+     * by the given address and port.
+     * @param address the multicast address
+     * @param port the port
      * @throws IOException 
      */
     public SynchronizedClock(InetAddress address, int port) throws IOException {
-      
-      System.out.println("Creating socket...");
+      // Create multicast socket and join the group
       socket = new MulticastSocket(port);
-      
-      System.out.println("Joining group " + address);
       group = address;
       socket.joinGroup(address);
-      
-      System.out.println("Set up completed");
     }
     
     /**
-     * Retourne l'heure en millisecondes, synchronisé au mieux par le Precision
-     * Time Protocol.
-     * @return l'heure en ms 
+     * Returns the time in ms. The time is based on the System.currentTimeMillis()
+     * method and synchronized with the Master application.
+     * @return the time in ms.
      */
     public synchronized long getSynchronizedTime() {
         long time = System.currentTimeMillis() + lastOffset;
@@ -83,40 +78,44 @@ public class SynchronizedClock implements Runnable {
         return time;
     }
     
-    public synchronized long getOffset() {
+    /**
+     * Get the last calculated offset.
+     * @return the offset
+     */
+    protected synchronized long getOffset() {
         return lastOffset;
     }
     
-    public synchronized void setOffset(long offset) {
+    /**
+     * Set a new offset.
+     * @param offset the new offset value.
+     */
+    protected synchronized void setOffset(long offset) {
         this.lastOffset = offset;
     }
     
-    public synchronized void quitProcess() {
-        quitProcess = true;
-    }
-    
-    public synchronized boolean requestedQuitProcess() {
-        return quitProcess;
+    /**
+     * Get the Master application IP address.
+     * @return the Master application IP Address.
+     */
+    public InetAddress getMasterAddress() {
+       return masterAddress;
     }
 
     @Override
     public void run() {
-        
         try {
-            
             // Loop to manage Master messages
             while (true) {
-                // Récupère le message
+                // Read the message
                byte[] buf = new byte[256];
                DatagramPacket packet = new DatagramPacket(buf, buf.length);
-               System.out.println("Waiting for UDP packet");
                socket.receive(packet);
 
                ByteBuffer buffer = ByteBuffer.wrap(packet.getData());
                
                switch (Protocol.getEnum(buffer.get(0))) {
                   case SYNC:
-                        System.out.println("SYNC");
                         
                         // Récupère l'id
                         lastSyncID = buffer.getInt(1);
@@ -126,7 +125,6 @@ public class SynchronizedClock implements Runnable {
                      break;
 
                   case FOLLOW_UP:
-                        System.out.println("FOLLOW_UP");
 
                         // Récupère l'id
                         int id = buffer.getInt(9);
@@ -152,22 +150,9 @@ public class SynchronizedClock implements Runnable {
                   default:
                      continue;
                }
-               
-               if (requestedQuitProcess()) {
-                   break;
-               }
             }
-            
-            // When the communication is over, leave the group and close the socket
-            socket.leaveGroup(group);
-            socket.close();
         } catch (IOException ex) {
             Logger.getLogger(SynchronizedClock.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
-    public InetAddress getMasterAddress() {
-       return masterAddress;
-    }
-    
 }

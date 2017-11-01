@@ -1,5 +1,10 @@
 package ch.heigvd.prr.slave;
 
+/**
+ * file:        DelaySynchronizer.java 
+ * created:     26.10.2017
+ */
+
 import ch.heigvd.prr.common.Protocol;
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -11,126 +16,144 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * The DelaySynchronizer class purpose is to calculate the communication delay
+ * during the synchronization with the Master (DELAY_REQUEST / DELAY_RESPONSE
+ * messages).
  *
- * @author mathieu
+ * It communicates directly with the Master using UDP.
  */
 public class DelaySynchronizer implements Runnable {
-    
-    // Socket pour envoyer les paquets UDP
+
+    // Socket to send UDP messages
     private final DatagramSocket socket;
-    
-    // L'adresse IP du master
+
+    // Master IP address
     private final InetAddress masterIPAddress;
-    
-    // Le port sur lequel envoyer les paquets
+
+    // The master listening port
     private final int masterPort;
-    
-    // Synchronized clock to get the current offset
-    private SynchronizedClock parentClock;
-    
-    // Temps de la dernière DELAY_REQUEST
+
+    // Synchronized parent clock to get the current offset
+    private final SynchronizedClock parentClock;
+
+    // Time of last DELAY_REQUEST
     private long lastDelayRequestTime;
-    
-    // Le dernier délai calculé pour communiquer avec le master
+
+    // Last calculated delay
     private long delay;
-    
-    // l'ID de la dernière requête d'ID envoyée
+
+    // Last delay ID 
     private int delayID;
-    
+
+    /**
+     * Constructor, creates the UDP socket.
+     *
+     * @param parentClock the parent clock that manages this instance
+     * @throws SocketException
+     */
     public DelaySynchronizer(SynchronizedClock parentClock) throws SocketException {
         this.masterIPAddress = parentClock.getMasterAddress();
         this.masterPort = Protocol.DELAY_COMMUNICATION_PORT;
-        
-        socket = new DatagramSocket();
-        
         this.parentClock = parentClock;
+
+        socket = new DatagramSocket();
     }
-    
+
+    /**
+     * Get the last calculated delay
+     *
+     * @return the last calculated delay
+     */
     public synchronized long getDelay() {
         return delay;
     }
-    
+
+    /**
+     * Set a new delay value
+     *
+     * @param delay the new delay value
+     */
     private synchronized void setDelay(long delay) {
         this.delay = delay;
     }
-    
+
+    /**
+     * Calculates a random waiting time inside the PTP range.
+     *
+     * @return a random waiting time
+     */
     public static long getRandomWaitingTime() {
         int range = (Protocol.INTERVAL_DELAY_MAX - Protocol.INTERVAL_DELAY_MIN) + 1;
-        return (long)(Math.random() * range) + Protocol.INTERVAL_DELAY_MIN;
+        return (long) (Math.random() * range) + Protocol.INTERVAL_DELAY_MIN;
     }
 
     @Override
     public void run() {
-        
-        System.out.println("Starting DelaySynchronizer...");
-        System.out.println("Master Ip is " + masterIPAddress);
-        System.out.println("Master port is " + Protocol.DELAY_COMMUNICATION_PORT);
-        
+
         while (true) {
-            
+
             {
                 try {
-                    // Créer le contenu de la requête DELAY_REQUEST
+                    // Create the content of the DELAY_REQUEST message
                     ByteBuffer buffer = ByteBuffer.allocate(32);
                     buffer.put(Protocol.getByte(Protocol.Code.DELAY_REQUEST));
                     buffer.putInt(this.delayID);
-                    
+
                     byte[] data = buffer.array();
-                    
-                    // Créer un paquet UDP
+
+                    // Create a UDP packet
                     DatagramPacket packet = new DatagramPacket(
                             data,
                             data.length,
                             masterIPAddress,
                             masterPort
                     );
-                    
-                    // Envoyer la requête
+
+                    // Send the request
                     socket.send(packet);
-                    
-                    // Enregistrer le moment de l'envoi
+
+                    // Save sending time
                     lastDelayRequestTime = System.currentTimeMillis() + parentClock.getOffset();
-                    
-                    System.out.println("Sent DELAY_REQUEST at: " + lastDelayRequestTime);
-                    
+
                 } catch (IOException ex) {
                     Logger.getLogger(DelaySynchronizer.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
-            
+
             {
                 try {
 
-                    // Préparer le container la réponse du serveur
+                    // Prepare the container to read the Master response
                     byte[] buf = new byte[32];
                     DatagramPacket packet = new DatagramPacket(buf, buf.length);
-                    
-                    // Attendre la réponse DELAY_RESPONSE
-                    socket.receive(packet);
 
+                    // Wait for the DELAY_RESPONSE message
+                    socket.receive(packet);
+                    
                     ByteBuffer buffer = ByteBuffer.wrap(packet.getData());
-                    
-                    System.out.println("Received a response in DelaySynchronizer...");
-                    
-                    // Si la réponse du serveur correspond à un DELAY_RESPONSE
+
+                    // If what has been sent is indeed a DELAY_RESPONSE
                     if (Protocol.getEnum(buffer.get(0)) == Protocol.Code.DELAY_RESPONSE) {
-                        int id = buffer.getInt(1);
                         
-                        // Si l'ID de la réponse correspond au dernier DELAY_REQUEST
+                        // Get message ID
+                        int id = buffer.getInt(1);
+
+                        // If the ID matches the last ID
                         if (id == delayID) {
+                            // Get Master time
                             long masterTime = buffer.getLong(5);
                             
+                            // Set a new delay
                             setDelay((masterTime - lastDelayRequestTime) / 2);
                             
+                            // Increase ID
                             delayID++;
-                            
-                            System.out.println("Received DELAY_RESPONSE with delay: " + ((masterTime - lastDelayRequestTime) / 2));
                         }
                     }
-                    
+
                     // Attendre un temps aléatoire 
                     Thread.sleep(getRandomWaitingTime());
-                    
+
                 } catch (IOException ex) {
                     Logger.getLogger(DelaySynchronizer.class.getName()).log(Level.SEVERE, null, ex);
                 } catch (InterruptedException ex) {
@@ -139,5 +162,5 @@ public class DelaySynchronizer implements Runnable {
             }
         }
     }
-    
+
 }
