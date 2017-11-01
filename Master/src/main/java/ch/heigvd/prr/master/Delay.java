@@ -10,14 +10,31 @@ import java.nio.ByteBuffer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class Lol implements Runnable {
+
+/**
+ * <h1>Delay (Master)</h1>
+ *  
+ * This is the second part of the PTP protocal. It allows to determine the 
+ * delay transmission between the master and the salve.
+ * 
+ * This class waits a DELAY_REQUEST request from the salve then responds with a 
+ * DELAY_RESPONSE than contains the time when it received the DELAY_REQUEST 
+ * request. 
+ */
+public class Delay implements Runnable {
    
-   private int port;
+   private final int port;
    
-   public Lol(int port) {
+   /**
+    * Default constructor
+    * 
+    * @param port The port to listen
+    */
+   public Delay(int port) {
       this.port = port;
    }
    
+   @Override
    public void run() {
       try (DatagramSocket socket = new DatagramSocket(port)) {
 
@@ -32,7 +49,6 @@ public class Lol implements Runnable {
             {
                byte[] buf = new byte[256];
                DatagramPacket packet = new DatagramPacket(buf, buf.length);
-               System.out.println("Waiting for UDP packet");
                socket.receive(packet);
 
                // Get sender info
@@ -67,14 +83,13 @@ public class Lol implements Runnable {
                );
                
                socket.send(packet);
-               System.out.println("Envoie du DELAY_RESPONSE a " + address + " " + port);
             }
          }     
          
       } catch (SocketException ex) {
-         Logger.getLogger(Lol.class.getName()).log(Level.SEVERE, null, ex);
+         Logger.getLogger(Delay.class.getName()).log(Level.SEVERE, null, ex);
       } catch (IOException ex) {
-         Logger.getLogger(Lol.class.getName()).log(Level.SEVERE, null, ex);
+         Logger.getLogger(Delay.class.getName()).log(Level.SEVERE, null, ex);
       }
    }
 }

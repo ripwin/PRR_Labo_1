@@ -5,6 +5,17 @@ import java.net.UnknownHostException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * This is the master of the PTP Protocal.
+ * 
+ * It contains two classes : Synchronization and Delay
+ * 
+ * Synchronization sends every k seconds a Sync and Follow up request to the
+ * slave. It allows to calculate the offset between the master and the slave.
+ * 
+ * Delay waits a DELAY_REQUEST from the slave and sends a DELAY_RESPONSE with 
+ * the time when a DELAY_REQUEST arrived.
+ */
 public class Main {
    public static void main(String args[]) {
       try {
@@ -12,23 +23,18 @@ public class Main {
             new Synchronization(
                Protocol.getMulticastAddress(), 
                Protocol.MULTICAST_PORT, 
-               Protocol.INTERVAL_SYNC)
+               Protocol.INTERVAL_SYNC
+            )
          );
          
-         Thread delay = new Thread(new Lol(Protocol.DELAY_COMMUNICATION_PORT));
+         Thread delay = new Thread(new Delay(Protocol.DELAY_COMMUNICATION_PORT));
          
          sync.start();
          delay.start();
          
          sync.join();
          delay.join();
-         
-         
-      } catch (UnknownHostException ex) {
-         Logger.getLogger(
-            Main.class.getName()).log(Level.SEVERE, null, ex
-         );
-      } catch (InterruptedException ex) {
+      } catch (UnknownHostException | InterruptedException ex) {
          Logger.getLogger(
             Main.class.getName()).log(Level.SEVERE, null, ex
          );
