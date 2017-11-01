@@ -63,8 +63,6 @@ public class SlaveClient implements Runnable {
                 // Accept client connections
                 Socket socket = server.accept();
                 
-                System.out.println("Accepted new client connection...");
-                
                 // Get input and output stream to write simple data
                 DataInputStream in = new DataInputStream(socket.getInputStream());
                 DataOutputStream out = new DataOutputStream(socket.getOutputStream());
@@ -72,12 +70,9 @@ public class SlaveClient implements Runnable {
                 // Read the request
                 byte request = in.readByte();
                 
-                System.out.println("Request was: " + request);
-                
                 if (request == GET_TIME) {
                     // If they asked for time, send time
                     long time = parent.getSynchronizedTime();
-                    System.out.println("TIME ============== " + time);
                     out.writeLong(time);
                 } else {
                     // Else send error
