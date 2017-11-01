@@ -1,6 +1,6 @@
 /**
- *
- * @author Mathieu monteverde
+ * file:        SynchronizedClock.java
+ * created:     10.10.2017
  */
 package ch.heigvd.prr.slave;
 
@@ -14,32 +14,40 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
+ * The SynchronizedClock class implements the slave part of the Precision Time 
+ * Protocol. Its purpose is to provide a synchronized time, computed by 
+ * calculating an offset and a delay to the Master clock. 
+ * 
+ * The SynchronizedClock calculates the offset and uses a DelaySynchronizer
+ * instance to manage the communication delay.
+ * 
+ * Some methods use java lock mechanisms to manage thread concurrency.
  */
 public class SynchronizedClock implements Runnable {
     
-    // Multicast socket pour synchroniser le temps
+    // Multicast socket to communicate with master
     private MulticastSocket socket;
     
-    // Group à rejoindre
+    // UDP multicast group
     private InetAddress group;
     
-    // Temps synchronisé
-    private long currentTime;
+    // master IP address
+    private InetAddress masterAddress;
     
-    // Objet chargé de synchroniser le délai
+    // Time of SYNC reception
+    private long lastSyncTime;
+    
+    // Last received SYNC ID
+    private int lastSyncID;
+    
+    // DelaySynchronizer to manage the communication delay
     private DelaySynchronizer delaySynchronizer;
     
-    // SYNC ID reçu le plus récemment
-    private int syncID;
+    // Last calculated offset
+    private long lastOffset;
     
-    // Dernier Offset calculé
-    private long offset;
-    
+    // Variable to keep track of process quit requests
     private boolean quitProcess = false;
-    
-    private InetAddress masterAddress;
-    private int masterPort;
     
     /**
      * Etablit une connexion au groupe multicast fourni en paramètre
@@ -66,11 +74,21 @@ public class SynchronizedClock implements Runnable {
      * @return l'heure en ms 
      */
     public synchronized long getSynchronizedTime() {
-        return offset + delaySynchronizer.getDelay();
+        long time = System.currentTimeMillis() + lastOffset;
+        
+        if (delaySynchronizer != null) {
+            time += delaySynchronizer.getDelay();
+        }
+        
+        return time;
     }
     
     public synchronized long getOffset() {
-        return offset;
+        return lastOffset;
+    }
+    
+    public synchronized void setOffset(long offset) {
+        this.lastOffset = offset;
     }
     
     public synchronized void quitProcess() {
@@ -101,10 +119,10 @@ public class SynchronizedClock implements Runnable {
                         System.out.println("SYNC");
                         
                         // Récupère l'id
-                        syncID = buffer.getInt(1);
+                        lastSyncID = buffer.getInt(1);
                         
                         // Sauvegarde du temps local
-                        currentTime = System.currentTimeMillis();
+                        lastSyncTime = System.currentTimeMillis();
                      break;
 
                   case FOLLOW_UP:
@@ -113,17 +131,16 @@ public class SynchronizedClock implements Runnable {
                         // Récupère l'id
                         int id = buffer.getInt(9);
 
-                        if(id == this.syncID) {
+                        if(id == this.lastSyncID) {
                            // Récupère le temps master
                            long masterTime = buffer.getLong(1);
                            
                            // Calcul de l'écart
-                           offset = masterTime - currentTime;
+                           setOffset(masterTime - lastSyncTime);
                            
                            // Démarre le thread
                            if(delaySynchronizer == null) {
                               masterAddress = packet.getAddress();
-                              masterPort = packet.getPort();
 
                               delaySynchronizer = new DelaySynchronizer(this);
                               
@@ -151,10 +168,6 @@ public class SynchronizedClock implements Runnable {
     
     public InetAddress getMasterAddress() {
        return masterAddress;
-    }
-    
-    public int getMasterPort() {
-       return masterPort;
     }
     
 }

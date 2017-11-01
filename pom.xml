@@ -16,6 +16,7 @@
     <module>Common</module>
     <module>Master</module>
     <module>Slave</module>
+    <module>TestApplication</module>
   </modules>
   
   <dependencies>
