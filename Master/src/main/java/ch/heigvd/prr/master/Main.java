@@ -1,3 +1,8 @@
+/**
+ * file:        Main.java
+ * created:     31.10.2017
+ */
+
 package ch.heigvd.prr.master;
 
 import ch.heigvd.prr.common.Protocol;
