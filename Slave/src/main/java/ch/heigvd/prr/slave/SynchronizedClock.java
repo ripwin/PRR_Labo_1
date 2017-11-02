@@ -103,7 +103,8 @@ public class SynchronizedClock implements Runnable {
      * Set the delaySynchronizer instance.
      * @param delaySynchronizer the new delaySynchronizer instance
      */
-    private synchronized void setDelaySynchronizer(DelaySynchronizer delaySynchronizer) {
+    private synchronized void setDelaySynchronizer(
+            DelaySynchronizer delaySynchronizer) {
         this.delaySynchronizer = delaySynchronizer;
     }
 
@@ -172,7 +173,9 @@ public class SynchronizedClock implements Runnable {
                 }
             }
         } catch (IOException ex) {
-            Logger.getLogger(SynchronizedClock.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(SynchronizedClock.class.getName()).log(
+                    Level.SEVERE, null, ex
+            );
         }
     }
 }

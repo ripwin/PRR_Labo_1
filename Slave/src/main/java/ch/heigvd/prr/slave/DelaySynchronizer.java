@@ -1,9 +1,10 @@
-package ch.heigvd.prr.slave;
-
 /**
  * file:        DelaySynchronizer.java 
  * created:     26.10.2017
  */
+
+
+package ch.heigvd.prr.slave;
 
 import ch.heigvd.prr.common.Protocol;
 import java.io.IOException;
@@ -51,7 +52,8 @@ public class DelaySynchronizer implements Runnable {
      * @param parentClock the parent clock that manages this instance
      * @throws SocketException
      */
-    public DelaySynchronizer(SynchronizedClock parentClock) throws SocketException {
+    public DelaySynchronizer(SynchronizedClock parentClock) 
+            throws SocketException {
         this.masterIPAddress = parentClock.getMasterAddress();
         this.masterPort = Protocol.DELAY_COMMUNICATION_PORT;
         this.parentClock = parentClock;
@@ -83,7 +85,8 @@ public class DelaySynchronizer implements Runnable {
      * @return a random waiting time
      */
     protected static long getRandomWaitingTime() {
-        int range = (Protocol.INTERVAL_DELAY_MAX - Protocol.INTERVAL_DELAY_MIN) + 1;
+        int range = (Protocol.INTERVAL_DELAY_MAX - Protocol.INTERVAL_DELAY_MIN) 
+                + 1;
         return (long) (Math.random() * range) + Protocol.INTERVAL_DELAY_MIN;
     }
 
@@ -113,10 +116,13 @@ public class DelaySynchronizer implements Runnable {
                     socket.send(packet);
 
                     // Save sending time
-                    lastDelayRequestTime = System.currentTimeMillis() + parentClock.getOffset();
+                    lastDelayRequestTime = System.currentTimeMillis() 
+                            + parentClock.getOffset();
 
                 } catch (IOException ex) {
-                    Logger.getLogger(DelaySynchronizer.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(DelaySynchronizer.class.getName()).log(
+                            Level.SEVERE, null, ex
+                    );
                 }
             }
 
@@ -133,7 +139,8 @@ public class DelaySynchronizer implements Runnable {
                     ByteBuffer buffer = ByteBuffer.wrap(packet.getData());
 
                     // If what has been sent is indeed a DELAY_RESPONSE
-                    if (Protocol.getEnum(buffer.get(0)) == Protocol.Code.DELAY_RESPONSE) {
+                    if (Protocol.getEnum(buffer.get(0)) 
+                            == Protocol.Code.DELAY_RESPONSE) {
                         
                         // Get message ID
                         int id = buffer.getInt(1);
@@ -155,9 +162,13 @@ public class DelaySynchronizer implements Runnable {
                     Thread.sleep(getRandomWaitingTime());
 
                 } catch (IOException ex) {
-                    Logger.getLogger(DelaySynchronizer.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(DelaySynchronizer.class.getName()).log(
+                            Level.SEVERE, null, ex
+                    );
                 } catch (InterruptedException ex) {
-                    Logger.getLogger(DelaySynchronizer.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(DelaySynchronizer.class.getName()).log(
+                            Level.SEVERE, null, ex
+                    );
                 }
             }
         }

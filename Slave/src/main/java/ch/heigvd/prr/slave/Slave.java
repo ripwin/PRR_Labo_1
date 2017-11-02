@@ -38,7 +38,9 @@ public class Slave {
      * @throws IOException 
      */
     private Slave() throws UnknownHostException, IOException {
-        clock = new SynchronizedClock(Protocol.getMulticastAddress(), Protocol.MULTICAST_PORT);
+        clock = new SynchronizedClock(
+                Protocol.getMulticastAddress(), Protocol.MULTICAST_PORT
+        );
         client = new SlaveClient(this);
     }
     
