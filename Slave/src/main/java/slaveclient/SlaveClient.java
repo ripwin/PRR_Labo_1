@@ -31,67 +31,67 @@ import java.util.logging.Logger;
  */
 public class SlaveClient implements Runnable {
 
-    // Port on which to open the Slave client
-    public final static int SLAVE_CLIENT_PORT = 14000;
+   // Port on which to open the Slave client
+   public final static int SLAVE_CLIENT_PORT = 14000;
 
-    // Get time command
-    public final static byte GET_TIME = 1;
+   // Get time command
+   public final static byte GET_TIME = 1;
 
-    // ServerSocket to receive client connections
-    private final ServerSocket server;
+   // ServerSocket to receive client connections
+   private final ServerSocket server;
 
-    // Parent slave to get time from
-    private final Slave parent;
+   // Parent slave to get time from
+   private final Slave parent;
 
-    /**
-     * Constructor that creates the TCP ServerSocket.
-     *
-     * @param parent the Slave parent instance to get time from
-     * @throws IOException if an errors occurs opening the Socket
-     */
-    public SlaveClient(Slave parent) throws IOException {
-        this.parent = parent;
+   /**
+    * Constructor that creates the TCP ServerSocket.
+    *
+    * @param parent the Slave parent instance to get time from
+    * @throws IOException if an errors occurs opening the Socket
+    */
+   public SlaveClient(Slave parent) throws IOException {
+      this.parent = parent;
 
-        // Create the ServerSocket
-        server = new ServerSocket(SLAVE_CLIENT_PORT);
-    }
+      // Create the ServerSocket
+      server = new ServerSocket(SLAVE_CLIENT_PORT);
+   }
 
-    @Override
-    public void run() {
-        while (true) {
-            try {
-                // Accept client connections
-                Socket socket = server.accept();
+   @Override
+   public void run() {
+      while (true) {
+         try {
+            // Accept client connections
+            Socket socket = server.accept();
 
-                // Get input and output stream to write simple data
-                DataInputStream in = new DataInputStream(
-                        socket.getInputStream()
-                );
-                DataOutputStream out = new DataOutputStream(
-                        socket.getOutputStream()
-                );
+            // Get input and output stream to write simple data
+            DataInputStream in = new DataInputStream(
+                    socket.getInputStream()
+            );
+            DataOutputStream out = new DataOutputStream(
+                    socket.getOutputStream()
+            );
 
-                // Read the request
-                byte request = in.readByte();
+            // Read the request
+            byte request = in.readByte();
 
-                if (request == GET_TIME) {
-                    // If they asked for time, send time
-                    long time = parent.getSynchronizedTime();
-                    out.writeLong(time);
-                } else {
-                    // Else send error
-                    out.writeLong(-1);
-                }
-
-                // Close the socket
-                socket.close();
-            } catch (IOException ex) {
-                Logger.getLogger(SlaveClient.class.getName()).log(
-                        Level.SEVERE, null, ex
-                );
-                break;
+            if (request == GET_TIME) {
+               // If they asked for time, send time
+               long time = parent.getSynchronizedTime();
+               out.writeLong(time);
+            } else {
+               // Else send error
+               out.writeLong(-1);
             }
-        }
-    }
+
+            // Close the socket
+            socket.close();
+         } catch (IOException ex) {
+            Logger.getLogger(SlaveClient.class.getName()).log(
+                    Level.SEVERE, null, ex
+            );
+            break;
+         }
+      }
+   }
 
 }
